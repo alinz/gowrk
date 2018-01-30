@@ -14,6 +14,8 @@ Usage: gowrk --url <url> [options]
 gowork Options:
 	--concurrent <value>  number of concurrent connections (default 1)
 	--request <value>     number of total requests (default 1)
+	--unique 							atatch timestamp to eeach request to prevent caching
+	--dump								dump all data request into csv file
 `
 
 func usage() {
@@ -25,10 +27,14 @@ func main() {
 	var url string
 	var concurrent int
 	var request int
+	var unique bool
+	var dump bool
 
 	flag.StringVar(&url, "url", "", "full qualified url")
 	flag.IntVar(&concurrent, "concurrent", 1, "number of concurrent connections")
 	flag.IntVar(&request, "request", 1, "number of total requests")
+	flag.BoolVar(&unique, "unique", false, "atatch timestamp to eeach request to prevent caching")
+	flag.BoolVar(&dump, "dump", false, "dump all data request into csv file")
 
 	flag.Parse()
 
@@ -36,5 +42,5 @@ func main() {
 		usage()
 	}
 
-	gowrk.Start(url, concurrent, request)
+	gowrk.Start(url, concurrent, request, unique, dump)
 }
