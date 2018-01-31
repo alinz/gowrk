@@ -12,10 +12,10 @@ const usagestr = `
 Usage: gowrk --url <url> [options]
 
 gowork Options:
-	--concurrent <value>  number of concurrent connections (default 1)
+	--concurrent <value>  tnumber of concurrent connections (default 1)
 	--request <value>     number of total requests (default 1)
-	--unique 							atatch timestamp to eeach request to prevent caching
-	--dump								dump all data request into csv file
+	--unique              atatch timestamp to eeach request to prevent caching
+	--dump                dump all data request into csv file
 `
 
 func usage() {
