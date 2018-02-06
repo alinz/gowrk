@@ -148,6 +148,7 @@ func Start(targetURL string, c, n int, unique, dump bool) {
 	go func() {
 		defer wg.Done()
 		var i int64
+		var errorMessage string
 
 		start := time.Now()
 
@@ -156,19 +157,14 @@ func Start(targetURL string, c, n int, unique, dump bool) {
 		}
 
 		for result := range wrk.results {
+			errorMessage = ""
+
 			if result.err != nil {
 				errors++
+				errorMessage = result.err.Error()
 			} else {
 				if min == 0 {
 					min = result.duration
-				}
-
-				if dump {
-					errorMessage := "NOPE"
-					if result.err != nil {
-						errorMessage = result.err.Error()
-					}
-					fmt.Fprintf(dumpWriter, "%d,\t%d,\t%s,\t%d,\t%d,\t%v\t%s\n", result.id, result.threadID, result.duration, result.size, result.statusCode, errorMessage, result.url)
 				}
 
 				max = calcMax(max, result.duration)
@@ -176,6 +172,10 @@ func Start(targetURL string, c, n int, unique, dump bool) {
 				avgDuration += int64(result.duration)
 				avgSize += result.size
 				i++
+			}
+
+			if dump {
+				fmt.Fprintf(dumpWriter, "%d,\t%d,\t%s,\t%d,\t%d,\t%s\n", result.id, result.threadID, result.duration, result.size, result.statusCode, errorMessage)
 			}
 		}
 
