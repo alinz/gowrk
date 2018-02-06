@@ -1,6 +1,7 @@
 package gowrk
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -86,6 +87,16 @@ func (w *Wrk) sendRequest(request *request) *result {
 	return result
 }
 
+func printMap(arr []map[string]interface{}, writer io.Writer) {
+	to := tabwriter.NewWriter(writer, 0, 0, 3, ' ', tabwriter.TabIndent)
+	for _, table := range arr {
+		for key, value := range table {
+			fmt.Fprintf(to, "%s:\t%v\n", key, value)
+		}
+	}
+	to.Flush()
+}
+
 func Start(targetURL string, c, n int, unique, dump bool) {
 	var dumpWriter *tabwriter.Writer
 
@@ -153,7 +164,7 @@ func Start(targetURL string, c, n int, unique, dump bool) {
 		start := time.Now()
 
 		if dump {
-			fmt.Fprintf(dumpWriter, "id,\tthread,\tDuration,\tSize,\tStatus Code,\terror,\tURL\n")
+			fmt.Fprintf(dumpWriter, "id,\tthread,\tDuration,\tSize,\tStatus Code,\terror\n")
 		}
 
 		for result := range wrk.results {
@@ -211,14 +222,18 @@ func Start(targetURL string, c, n int, unique, dump bool) {
 
 	wg.Wait()
 
-	fmt.Println("Concurrent: \t\t", c)
-	fmt.Println("Request: \t\t", n)
-	fmt.Println("URL: \t\t\t", targetURL)
-	fmt.Println("------------------")
-	fmt.Println("Total time: \t\t", totalTime)
-	fmt.Println("Min Duration: \t\t", min)
-	fmt.Println("Max Duration: \t\t", max)
-	fmt.Println("Average Duration: \t", time.Duration(avgDuration))
-	fmt.Println("Average Size: \t\t", avgSize, "bytes")
-	fmt.Println("Errors: \t\t", errors)
+	var output bytes.Buffer
+	printMap([]map[string]interface{}{
+		map[string]interface{}{"Concurrent": c},
+		map[string]interface{}{"Request": n},
+		map[string]interface{}{"URL": targetURL},
+		map[string]interface{}{"Total time": totalTime},
+		map[string]interface{}{"Min Duration": min},
+		map[string]interface{}{"Max Duration": max},
+		map[string]interface{}{"Average Duration": time.Duration(avgDuration)},
+		map[string]interface{}{"Average Size": fmt.Sprintf("%d bytes", avgSize)},
+		map[string]interface{}{"Errors": errors},
+	}, &output)
+
+	fmt.Println(string(output.Bytes()))
 }
