@@ -21,8 +21,9 @@ func countBytesReader(reader io.Reader) (int64, error) {
 		n, err := reader.Read(buffer)
 		switch err {
 		case nil:
-			count += int64(n)
+			fallthrough
 		case io.EOF:
+			count += int64(n)
 			return count, nil
 		default:
 			return 0, err
